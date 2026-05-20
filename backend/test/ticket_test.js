@@ -45,20 +45,26 @@ describe('Ticket Controller Tests', () => {
         status: 'Open',
         image: '/uploads/printer.png',
       };
-      const createStub = sinon.stub(Ticket, 'create').resolves(createdTicket);
+      // const createStub = sinon.stub(Ticket, 'create').resolves(createdTicket);
+      const createStub = sinon.stub(ticketFacade, 'createTicket').resolves(createdTicket); //NEW
       const res = {
         status: sinon.stub().returnsThis(),
         json: sinon.spy(),
       };
       await createTicket(req, res);
-      expect(createStub.calledOnceWith({
-        user: userId,
-        subject: 'Printer not working',
-        description: 'Office printer is offline',
-        category: 'Hardware',
-        priority: 'High',
-        image: '/uploads/printer.png',
-      })).to.be.true;
+      // expect(createStub.calledOnceWith({
+      //   user: userId,
+      //   subject: 'Printer not working',
+      //   description: 'Office printer is offline',
+      //   category: 'Hardware',
+      //   priority: 'High',
+      //   image: '/uploads/printer.png',
+      // })).to.be.true;
+      expect(createStub.calledOnceWith(
+        req.user,
+        req.body,
+        req.file
+      )).to.be.true;
       expect(res.status.calledWith(201)).to.be.true;
       expect(res.json.calledWith(createdTicket)).to.be.true;
     });
@@ -91,7 +97,8 @@ describe('Ticket Controller Tests', () => {
           priority: 'Medium',
         },
       };
-      sinon.stub(Ticket, 'create').throws(new Error('DB Error'));
+      // sinon.stub(Ticket, 'create').throws(new Error('DB Error'));
+      sinon.stub(ticketFacade, 'createTicket').throws(new Error('DB Error'));
       const res = {
         status: sinon.stub().returnsThis(),
         json: sinon.spy(),
@@ -258,17 +265,7 @@ describe('Ticket Controller Tests', () => {
     it('should update own ticket successfully', async () => {
       const userId = new mongoose.Types.ObjectId().toString();
       const ticketId = new mongoose.Types.ObjectId().toString();
-      const savedTicket = {
-        _id: ticketId,
-        user: { toString: () => userId },
-        subject: 'Old subject',
-        description: 'Old description',
-        category: 'Other',
-        priority: 'Low',
-        image: '',
-        save: sinon.stub().resolvesThis(),
-      };
-      sinon.stub(Ticket, 'findById').resolves(savedTicket);
+
       const req = {
         params: { id: ticketId },
         user: { id: userId },
@@ -280,54 +277,158 @@ describe('Ticket Controller Tests', () => {
         },
         file: { filename: 'updated.png' },
       };
+
+      const updatedTicket = {
+        _id: ticketId,
+        user: userId,
+        subject: 'Updated subject',
+        description: 'Updated description',
+        category: 'Software',
+        priority: 'High',
+        image: '/uploads/updated.png',
+      };
+
+      const updateStub = sinon
+        .stub(ticketFacade, 'updateMyTicket')
+        .resolves(updatedTicket);
+
       const res = {
         status: sinon.stub().returnsThis(),
         json: sinon.spy(),
       };
+
       await updateMyTicket(req, res);
-      expect(savedTicket.subject).to.equal('Updated subject');
-      expect(savedTicket.description).to.equal('Updated description');
-      expect(savedTicket.category).to.equal('Software');
-      expect(savedTicket.priority).to.equal('High');
-      expect(savedTicket.image).to.equal('/uploads/updated.png');
-      expect(savedTicket.save.calledOnce).to.be.true;
+
+      expect(updateStub.calledOnceWith(
+        ticketId,
+        req.user,
+        req.body,
+        req.file
+      )).to.be.true;
+
       expect(res.status.calledWith(200)).to.be.true;
-      expect(res.json.calledOnce).to.be.true;
+      expect(res.json.calledWith(updatedTicket)).to.be.true;
     });
+
     it('should return 404 if own ticket to update is not found', async () => {
-      sinon.stub(Ticket, 'findById').resolves(null);
       const req = {
         params: { id: new mongoose.Types.ObjectId().toString() },
         user: { id: new mongoose.Types.ObjectId().toString() },
         body: {},
       };
+
+      sinon
+        .stub(ticketFacade, 'updateMyTicket')
+        .throws({ statusCode: 404, message: 'Ticket not found' });
+
       const res = {
         status: sinon.stub().returnsThis(),
         json: sinon.spy(),
       };
+
       await updateMyTicket(req, res);
+
       expect(res.status.calledWith(404)).to.be.true;
       expect(res.json.calledWith({ message: 'Ticket not found' })).to.be.true;
     });
+
     it('should return 403 if user tries to update another user’s ticket', async () => {
-      const ticket = {
-        user: { toString: () => 'owner-id' },
-      };
-      sinon.stub(Ticket, 'findById').resolves(ticket);
       const req = {
         params: { id: new mongoose.Types.ObjectId().toString() },
         user: { id: 'different-user-id' },
         body: {},
       };
+
+      sinon
+        .stub(ticketFacade, 'updateMyTicket')
+        .throws({ statusCode: 403, message: 'Access denied' });
+
       const res = {
         status: sinon.stub().returnsThis(),
         json: sinon.spy(),
       };
+
       await updateMyTicket(req, res);
+
       expect(res.status.calledWith(403)).to.be.true;
       expect(res.json.calledWith({ message: 'Access denied' })).to.be.true;
     });
   });
+  // describe('updateMyTicket', () => {
+  //   it('should update own ticket successfully', async () => {
+  //     const userId = new mongoose.Types.ObjectId().toString();
+  //     const ticketId = new mongoose.Types.ObjectId().toString();
+  //     const savedTicket = {
+  //       _id: ticketId,
+  //       user: { toString: () => userId },
+  //       subject: 'Old subject',
+  //       description: 'Old description',
+  //       category: 'Other',
+  //       priority: 'Low',
+  //       image: '',
+  //       save: sinon.stub().resolvesThis(),
+  //     };
+  //     // sinon.stub(Ticket, 'findById').resolves(savedTicket);
+  //     const updateStub = sinon.stub(ticketFacade, 'updateMyTicket').resolves(updatedTicket);
+  //     const req = {
+  //       params: { id: ticketId },
+  //       user: { id: userId },
+  //       body: {
+  //         subject: 'Updated subject',
+  //         description: 'Updated description',
+  //         category: 'Software',
+  //         priority: 'High',
+  //       },
+  //       file: { filename: 'updated.png' },
+  //     };
+  //     const res = {
+  //       status: sinon.stub().returnsThis(),
+  //       json: sinon.spy(),
+  //     };
+  //     await updateMyTicket(req, res);
+  //     expect(savedTicket.subject).to.equal('Updated subject');
+  //     expect(savedTicket.description).to.equal('Updated description');
+  //     expect(savedTicket.category).to.equal('Software');
+  //     expect(savedTicket.priority).to.equal('High');
+  //     expect(savedTicket.image).to.equal('/uploads/updated.png');
+  //     expect(savedTicket.save.calledOnce).to.be.true;
+  //     expect(res.status.calledWith(200)).to.be.true;
+  //     expect(res.json.calledOnce).to.be.true;
+  //   });
+  //   it('should return 404 if own ticket to update is not found', async () => {
+  //     sinon.stub(Ticket, 'findById').resolves(null);
+  //     const req = {
+  //       params: { id: new mongoose.Types.ObjectId().toString() },
+  //       user: { id: new mongoose.Types.ObjectId().toString() },
+  //       body: {},
+  //     };
+  //     const res = {
+  //       status: sinon.stub().returnsThis(),
+  //       json: sinon.spy(),
+  //     };
+  //     await updateMyTicket(req, res);
+  //     expect(res.status.calledWith(404)).to.be.true;
+  //     expect(res.json.calledWith({ message: 'Ticket not found' })).to.be.true;
+  //   });
+  //   it('should return 403 if user tries to update another user’s ticket', async () => {
+  //     const ticket = {
+  //       user: { toString: () => 'owner-id' },
+  //     };
+  //     sinon.stub(Ticket, 'findById').resolves(ticket);
+  //     const req = {
+  //       params: { id: new mongoose.Types.ObjectId().toString() },
+  //       user: { id: 'different-user-id' },
+  //       body: {},
+  //     };
+  //     const res = {
+  //       status: sinon.stub().returnsThis(),
+  //       json: sinon.spy(),
+  //     };
+  //     await updateMyTicket(req, res);
+  //     expect(res.status.calledWith(403)).to.be.true;
+  //     expect(res.json.calledWith({ message: 'Access denied' })).to.be.true;
+  //   });
+  // });
   // ++++++++++New+++++++++++++
   describe('updateMyTicketStatus', () => {
     it('should update ticket status successfully', async () => {
