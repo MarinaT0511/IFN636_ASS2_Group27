@@ -28,7 +28,12 @@ const Tickets = () => {
     const fetchTickets = async () => {
       try {
         const response = await api.get('/tickets/admin/all');
-        setTickets(response.data || []);
+        // setTickets(response.data || []);
+        setTickets(
+          Array.isArray(response.data)
+            ? response.data
+            : response.data.tickets || []
+        );
       } catch (error) {
         setError(error.response?.data?.message || 'Failed to load tickets');
       } finally {
@@ -45,9 +50,14 @@ const Tickets = () => {
     }
   }, [editingTicket]);
 
+  // const activeTickets = useMemo(
+  //   () => tickets.filter((ticket) => ticket.status !== 'Closed'),
+  //   [tickets]
+  // );
+  const safeTickets = Array.isArray(tickets) ? tickets : [];
   const activeTickets = useMemo(
-    () => tickets.filter((ticket) => ticket.status !== 'Closed'),
-    [tickets]
+    () => safeTickets.filter((ticket) => ticket.status !== 'Closed'),
+    [safeTickets]
   );
 
   const filteredTickets = useMemo(() => {
@@ -98,7 +108,8 @@ const Tickets = () => {
       <div ref={formRef}>
         {editingTicket && (
           <AdminTicketStatusForm
-            tickets={tickets}
+            // tickets={tickets}
+            tickets={safeTickets}
             setTickets={setTickets}
             editingTicket={editingTicket}
             setEditingTicket={setEditingTicket}

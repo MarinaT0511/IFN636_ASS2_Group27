@@ -28,7 +28,18 @@ const MyTickets = () => {
     const fetchTickets = async () => {
       try {
         const response = await api.get('/tickets');
-        setTickets(response.data || []);
+        //     setTickets(response.data || []);
+        //   } catch (error) {
+        //     setError(error.response?.data?.message || 'Failed to load your tickets');
+        //   } finally {
+        //     setLoading(false);
+        //   }
+        // };
+        setTickets(
+          Array.isArray(response.data)
+            ? response.data
+            : response.data.tickets || []
+        );
       } catch (error) {
         setError(error.response?.data?.message || 'Failed to load your tickets');
       } finally {
@@ -95,7 +106,8 @@ const MyTickets = () => {
 
       <div ref={formRef}>
         <TicketForm
-          tickets={tickets}
+          // tickets={tickets}
+          tickets={safeTickets}
           setTickets={setTickets}
           editingTicket={editingTicket}
           setEditingTicket={setEditingTicket}
