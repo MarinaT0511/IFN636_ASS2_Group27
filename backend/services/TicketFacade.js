@@ -1,6 +1,5 @@
 const Ticket = require('../models/Ticket');
 const TicketActivityLog = require('../models/TicketActivityLog');
-
 const TicketFactory = require('./ticketFactory/TicketFactory');
 const TicketStatusContext = require('./ticketStates/TicketStatusContext');
 
@@ -21,8 +20,15 @@ class TicketFacade {
     this.statusContext = new TicketStatusContext();
 
     this.eventManager = new TicketEventManager();
-    this.eventManager.subscribe(new ActivityLogObserver());
-    this.eventManager.subscribe(new NotificationObserver());
+
+    // Disable database-writing observers during unit/functional tests.
+    // This prevents TicketActivityLog.create() from trying to use a real MongoDB
+    // connection when controller tests are using sinon stubs.
+    if (process.env.NODE_ENV !== 'test') {
+      this.eventManager.subscribe(new ActivityLogObserver());
+      this.eventManager.subscribe(new NotificationObserver());
+    }
+
     this.eventManager.subscribe(new ConsoleLogObserver());
   }
 
