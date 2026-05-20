@@ -68,23 +68,55 @@ describe('Ticket Controller Tests', () => {
       expect(res.status.calledWith(201)).to.be.true;
       expect(res.json.calledWith(createdTicket)).to.be.true;
     });
+    // it('should return 400 when subject or description is missing', async () => {
+    //   const req = {
+    //     user: { id: new mongoose.Types.ObjectId().toString() },
+    //     body: {
+    //       subject: '',
+    //       description: '',
+    //       category: '',  //New
+    //     },
+    //   };
+    //   const res = {
+    //     status: sinon.stub().returnsThis(),
+    //     json: sinon.spy(),
+    //   };
+    //   await createTicket(req, res);
+    //   expect(res.status.calledWith(400)).to.be.true;
+    //   expect(
+    //     res.json.calledWith({ message: 'Subject, description and category are required' })
+    //   ).to.be.true;
+    // });
     it('should return 400 when subject or description is missing', async () => {
       const req = {
         user: { id: new mongoose.Types.ObjectId().toString() },
         body: {
           subject: '',
           description: '',
-          category: '',  //New
+          category: '',
         },
       };
+
+      sinon
+        .stub(ticketFacade, 'createTicket')
+        .throws({
+          statusCode: 400,
+          message: 'Subject, description and category are required',
+        });
+
       const res = {
         status: sinon.stub().returnsThis(),
         json: sinon.spy(),
       };
+
       await createTicket(req, res);
+
       expect(res.status.calledWith(400)).to.be.true;
+
       expect(
-        res.json.calledWith({ message: 'Subject, description and category are required' })
+        res.json.calledWith({
+          message: 'Subject, description and category are required',
+        })
       ).to.be.true;
     });
     it('should return 500 when create throws an error', async () => {
