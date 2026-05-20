@@ -1,7 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const mongoose = require('mongoose');
-
 const Ticket = require('../models/Ticket');
 const {
   createTicket,
