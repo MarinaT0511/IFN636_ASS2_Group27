@@ -56,9 +56,15 @@ const MyTickets = () => {
     }
   }, [editingTicket]);
 
+
+  // const activeTickets = useMemo(
+  //   () => tickets.filter((ticket) => ticket.status !== 'Closed'),
+  //   [tickets]
+  // );
+  const safeTickets = Array.isArray(tickets) ? tickets : [];
   const activeTickets = useMemo(
-    () => tickets.filter((ticket) => ticket.status !== 'Closed'),
-    [tickets]
+    () => safeTickets.filter((ticket) => ticket.status !== 'Closed'),
+    [safeTickets]
   );
 
   const filteredTickets = useMemo(() => {
