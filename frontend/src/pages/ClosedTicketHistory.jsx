@@ -44,7 +44,10 @@ const ClosedTicketHistory = () => {
     fetchTickets();
   }, [isAdmin]);
 
-  const safeTickets = Array.isArray(tickets) ? tickets : [];
+  const safeTickets = useMemo(
+    () => (Array.isArray(tickets) ? tickets : []),
+    [tickets]
+  );
   const closedTickets = useMemo(() => {
     const keyword = searchTerm.trim().toLowerCase();
 

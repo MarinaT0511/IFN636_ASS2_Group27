@@ -49,7 +49,10 @@ const UserDashboard = () => {
   //   };
   // }, [tickets]);
 
-  const safeTickets = Array.isArray(tickets) ? tickets : [];
+  const safeTickets = useMemo(
+    () => (Array.isArray(tickets) ? tickets : []),
+    [tickets]
+  );
   const stats = useMemo(() => {
     return {
       total: safeTickets.length,
