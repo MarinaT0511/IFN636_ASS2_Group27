@@ -17,13 +17,7 @@ const ManageCategories = () => {
   const fetchCategories = async () => {
     try {
       const response = await api.get('/categories/admin/all');
-      // setCategories(response.data || []);
-      setCategories(
-        Array.isArray(response.data)
-          ? response.data
-          : response.data.categories || []
-      );
-
+      setCategories(response.data || []);
       setError('');
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to load categories');
@@ -35,9 +29,6 @@ const ManageCategories = () => {
   useEffect(() => {
     fetchCategories();
   }, []);
-
-  const safeCategories = Array.isArray(categories) ? categories : [];
-
 
   const resetForm = () => {
     setFormData({
@@ -102,13 +93,8 @@ const ManageCategories = () => {
     try {
       await api.delete(`/categories/${category._id}`);
 
-      // setCategories((prev) =>
-      //   prev.filter((item) => item._id !== category._id)
-      // );
       setCategories((prev) =>
-        (Array.isArray(prev) ? prev : []).filter(
-          (item) => item._id !== category._id
-        )
+        prev.filter((item) => item._id !== category._id)
       );
 
       if (editingCategory?._id === category._id) {
@@ -183,15 +169,13 @@ const ManageCategories = () => {
         <div className="category-table-header">
           <div>
             <h2>Category List</h2>
-            {/* <p>{categories.length} category record(s)</p> */}
-            <p>{safeCategories.length} category record(s)</p>
+            <p>{categories.length} category record(s)</p>
           </div>
         </div>
 
         {loading ? (
           <div className="empty-text">Loading categories...</div>
-          // ) : categories.length === 0 ? (
-        ) : safeCategories.length === 0 ? (
+        ) : categories.length === 0 ? (
           <div className="empty-text">No categories found.</div>
         ) : (
           <div className="table-scroll">
@@ -206,8 +190,7 @@ const ManageCategories = () => {
               </thead>
 
               <tbody>
-                {/* {categories.map((category) => ( */}
-                {safeCategories.map((category) => (
+                {categories.map((category) => (
                   <tr key={category._id}>
                     <td>
                       <div className="category-name-cell">{category.name}</div>

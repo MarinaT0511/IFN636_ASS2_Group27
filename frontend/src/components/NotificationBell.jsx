@@ -7,39 +7,20 @@ const NotificationBell = () => {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState('');
 
-  // const unreadCount = useMemo(
-  //   () => notifications.filter((notification) => !notification.isRead).length,
-  //   [notifications]
-  // );
   const unreadCount = useMemo(
-    () =>
-      (Array.isArray(notifications) ? notifications : []).filter(
-        (notification) => !notification.isRead
-      ).length,
+    () => notifications.filter((notification) => !notification.isRead).length,
     [notifications]
   );
 
-  // const readCount = useMemo(
-  //   () => notifications.filter((notification) => notification.isRead).length,
-  //   [notifications]
-  // );
   const readCount = useMemo(
-    () =>
-      (Array.isArray(notifications) ? notifications : []).filter(
-        (notification) => notification.isRead
-      ).length,
+    () => notifications.filter((notification) => notification.isRead).length,
     [notifications]
   );
 
   const fetchNotifications = async () => {
     try {
       const response = await api.get('/notifications');
-      // setNotifications(response.data || []);
-      setNotifications(
-        Array.isArray(response.data)
-          ? response.data
-          : response.data.notifications || []
-      );
+      setNotifications(response.data || []);
       setError('');
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to load notifications');
