@@ -53,7 +53,10 @@ const TicketForm = ({
     const fetchCategories = async () => {
       try {
         const response = await api.get('/categories');
-        const activeCategories = response.data || [];
+        // const activeCategories = response.data || [];
+        const activeCategories = Array.isArray(response.data)
+          ? response.data
+          : response.data.categories || [];
 
         if (activeCategories.length > 0) {
           setCategories(activeCategories);
@@ -389,8 +392,8 @@ const TicketForm = ({
             {submitting
               ? 'Saving...'
               : editingTicket
-              ? 'Update Ticket'
-              : 'Submit Ticket'}
+                ? 'Update Ticket'
+                : 'Submit Ticket'}
           </button>
         </div>
       </form>
