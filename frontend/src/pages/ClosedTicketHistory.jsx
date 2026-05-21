@@ -28,7 +28,12 @@ const ClosedTicketHistory = () => {
         const endpoint = isAdmin ? '/tickets/admin/all' : '/tickets';
         const response = await api.get(endpoint);
 
-        setTickets(response.data || []);
+        // setTickets(response.data || []);
+        setTickets(
+          Array.isArray(response.data)
+            ? response.data
+            : response.data.tickets || []
+        );
       } catch (error) {
         setError(error.response?.data?.message || 'Failed to load ticket history');
       } finally {
@@ -39,10 +44,15 @@ const ClosedTicketHistory = () => {
     fetchTickets();
   }, [isAdmin]);
 
+  const safeTickets = useMemo(
+    () => (Array.isArray(tickets) ? tickets : []),
+    [tickets]
+  );
   const closedTickets = useMemo(() => {
     const keyword = searchTerm.trim().toLowerCase();
 
-    return [...tickets]
+    // return [...tickets]
+    return [...safeTickets]
       .filter((ticket) => ticket.status === 'Closed')
       .filter((ticket) => {
         const matchesSearch =
@@ -74,8 +84,8 @@ const ClosedTicketHistory = () => {
 
         return bDate - aDate;
       });
-  }, [tickets, searchTerm, categoryFilter, priorityFilter, sortOrder]);
-
+    // }, [tickets, searchTerm, categoryFilter, priorityFilter, sortOrder]);
+  }, [safeTickets, searchTerm, categoryFilter, priorityFilter, sortOrder]);
   const ticketLink = (ticketId) => {
     return isAdmin ? `/tickets/${ticketId}` : `/my-tickets/${ticketId}`;
   };
@@ -199,8 +209,8 @@ const ClosedTicketHistory = () => {
                           ticket.priority === 'High'
                             ? 'high-text'
                             : ticket.priority === 'Medium'
-                            ? 'medium-text'
-                            : 'low-text'
+                              ? 'medium-text'
+                              : 'low-text'
                         }
                       >
                         {ticket.priority}
