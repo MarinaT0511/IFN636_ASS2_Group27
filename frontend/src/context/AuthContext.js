@@ -24,30 +24,9 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // const login = async (formData) => {
-  //   const response = await api.post('/auth/login', formData);
-
-  //   const userData = {
-  //     id: response.data.id,
-  //     name: response.data.name,
-  //     email: response.data.email,
-  //     role: response.data.role || 'user',
-  //     university: response.data.university || '',
-  //     address: response.data.address || '',
-  //   };
-
-  //   localStorage.setItem('token', response.data.token);
-  //   localStorage.setItem('user', JSON.stringify(userData));
-  //   setUser(userData);
-
-  //   return response.data;
-  // };
+  //+++++++++++++++
   const login = async (formData) => {
     const response = await api.post('/auth/login', formData);
-
-    if (!response.data?.token) {
-      throw new Error(response.data?.message || 'Login failed');
-    }
 
     const userData = {
       id: response.data.id,
@@ -62,8 +41,32 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
 
-    return userData;
+    return response.data;
   };
+  //+++++++++++++++
+  // const login = async (formData) => {
+  //   const response = await api.post('/auth/login', formData);
+
+  //   if (!response.data?.token) {
+  //     throw new Error(response.data?.message || 'Login failed');
+  //   }
+
+  //   const userData = {
+  //     id: response.data.id,
+  //     name: response.data.name,
+  //     email: response.data.email,
+  //     role: response.data.role || 'user',
+  //     university: response.data.university || '',
+  //     address: response.data.address || '',
+  //   };
+
+  //   localStorage.setItem('token', response.data.token);
+  //   localStorage.setItem('user', JSON.stringify(userData));
+  //   setUser(userData);
+
+  //   return userData;
+  // };
+  //+++++++++++++++
 
   const register = async (formData) => {
     const response = await api.post('/auth/register', formData);
