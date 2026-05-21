@@ -25,7 +25,12 @@ const UserDashboard = () => {
     const fetchTickets = async () => {
       try {
         const response = await api.get('/tickets');
-        setTickets(response.data);
+        // setTickets(response.data);
+        setTickets(
+          Array.isArray(response.data)
+            ? response.data
+            : response.data.tickets || []
+        );
       } catch (error) {
         setError(error.response?.data?.message || 'Failed to load dashboard');
       }
@@ -34,17 +39,38 @@ const UserDashboard = () => {
     fetchTickets();
   }, []);
 
+  // const stats = useMemo(() => {
+  //   return {
+  //     total: tickets.length,
+  //     open: tickets.filter((ticket) => ticket.status === 'Open').length,
+  //     inProgress: tickets.filter((ticket) => ticket.status === 'In Progress').length,
+  //     resolved: tickets.filter((ticket) => ticket.status === 'Resolved').length,
+  //     closed: tickets.filter((ticket) => ticket.status === 'Closed').length,
+  //   };
+  // }, [tickets]);
+
+  const safeTickets = useMemo(
+    () => (Array.isArray(tickets) ? tickets : []),
+    [tickets]
+  );
   const stats = useMemo(() => {
     return {
-      total: tickets.length,
-      open: tickets.filter((ticket) => ticket.status === 'Open').length,
-      inProgress: tickets.filter((ticket) => ticket.status === 'In Progress').length,
-      resolved: tickets.filter((ticket) => ticket.status === 'Resolved').length,
-      closed: tickets.filter((ticket) => ticket.status === 'Closed').length,
+      total: safeTickets.length,
+      open: safeTickets.filter((ticket) => ticket.status === 'Open').length,
+      inProgress: safeTickets.filter(
+        (ticket) => ticket.status === 'In Progress'
+      ).length,
+      resolved: safeTickets.filter(
+        (ticket) => ticket.status === 'Resolved'
+      ).length,
+      closed: safeTickets.filter(
+        (ticket) => ticket.status === 'Closed'
+      ).length,
     };
-  }, [tickets]);
+  }, [safeTickets]);
 
-  const recentTickets = tickets.slice(0, 5);
+  // const recentTickets = tickets.slice(0, 5);
+  const recentTickets = safeTickets.slice(0, 5);
 
   return (
     <div className="dashboard-page">
