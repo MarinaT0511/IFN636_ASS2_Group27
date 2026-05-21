@@ -52,11 +52,9 @@ jobs:
         working-directory: ./backend
         run: |
           rm -f .env
-          cat <<EOF > .env
-          MONGO_URI=${{ secrets.MONGO_URI }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          PORT=${{ secrets.PORT }}
-          EOF
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "PORT=${{ secrets.PORT }}" >> .env
 
       - name: Recreate PM2 services
         run: |
