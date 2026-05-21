@@ -5,8 +5,8 @@ export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 export const UPLOADS_BASE_URL = `${BACKEND_BASE_URL}/uploads`;
 
 const api = axios.create({
-  // baseURL: API_BASE_URL,
-  baseURL: 'http://3.25.84.214',
+  baseURL: API_BASE_URL,
+  // baseURL: 'http://3.25.84.214',
   headers: {
     'Content-Type': 'application/json',
   },
